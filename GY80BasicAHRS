@@ -160,7 +160,6 @@ static const byte numberTable[] =
 
 #define display1 1
 #define display2 2
-#define display3 3
 
 #define AHRS  true          // set to false for basic data read
 #define SerialDebug false  // set to true to print serial output for debugging
@@ -281,7 +280,7 @@ float pitch, yaw, roll;
 float deltat = 0.0f;        // integration interval for both filter schemes
 
 uint32_t lastUpdate = 0; // used to calculate integration interval
-uint32_t now = 0;        // used to calculate integration interval
+uint32_t Now = 0;        // used to calculate integration interval
 
 float ax, ay, az, gx, gy, gz, mx, my, mz; // variables to hold latest sensor data values 
 float q[4] = {1.0f, 0.0f, 0.0f, 0.0f};    // vector to hold quaternion
@@ -426,7 +425,7 @@ void setup()
 void loop()
 {  
     // If intPin goes high or data ready status is TRUE, all data registers have new data
-    if (readByte(ADXL345_ADDRESS, ADXL345_INT_SOURCE) && 0x80) {  // When data is ready  
+    if (readByte(ADXL345_ADDRESS, ADXL345_INT_SOURCE) & 0x80) {  // When data is ready  
     readAccelData(accelCount);  // Read the x/y/z adc values
     getAres();
     
@@ -436,7 +435,7 @@ void loop()
     az = (float)accelCount[2]*aRes;  
     }
     
-    if(readByte(L3G4200D_ADDRESS, L3G4200D_STATUS_REG) && 0x08) {
+    if(readByte(L3G4200D_ADDRESS, L3G4200D_STATUS_REG) & 0x08) {
     readGyroData(gyroCount);  // Read the x/y/z adc values
     getGres();
  
@@ -446,7 +445,7 @@ void loop()
     gz = (float)gyroCount[2]*gRes;   
     }
 
-    if(readByte(HMC5883L_ADDRESS, HMC5883L_STATUS) && 0x01) { // If data ready bit set, then read magnetometer data
+    if(readByte(HMC5883L_ADDRESS, HMC5883L_STATUS) & 0x01) { // If data ready bit set, then read magnetometer data
     readMagData(magCount);  // Read the x/y/z adc values
     mRes = 0.73; // Conversion to milliGauss, 0.73 mG/LSB in hihgest resolution mode
     // So far, magnetometer bias is calculated and subtracted here manually, should construct an algorithm to do it automatically
@@ -467,9 +466,9 @@ void loop()
  //   }
   
 
-  now = micros();
-  deltat = ((now - lastUpdate)/1000000.0f); // set integration time by time elapsed since last filter update
-  lastUpdate = now;
+  Now = micros();
+  deltat = ((Now - lastUpdate)/1000000.0f); // set integration time by time elapsed since last filter update
+  lastUpdate = Now;
   // In the Gy-80, all three orientation sensors' x-, y-, and z-axes are aligned;
   // the magnetometer z-axis (+ up) is parallel to z-axis (+ up) of accelerometer and gyro!
   // We have to make some allowance for this orientation mismatch in feeding the output to the quaternion filter.
